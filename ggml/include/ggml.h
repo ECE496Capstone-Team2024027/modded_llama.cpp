@@ -395,6 +395,88 @@ extern "C" {
         GGML_TYPE_COUNT,
     };
 
+    static const char * ggml_type_to_str(enum ggml_type ggml_t) {
+        switch (ggml_t) {
+        case GGML_TYPE_F32:
+            return "GGML_TYPE_F32";
+        case GGML_TYPE_F16:
+            return "GGML_TYPE_F16";
+        case GGML_TYPE_Q4_0:
+            return "GGML_TYPE_Q4_0";
+        case GGML_TYPE_Q4_1:
+            return "GGML_TYPE_Q4_1";
+        // GGML_TYPE_Q4_2 = 4, support has been removed
+        // GGML_TYPE_Q4_3 = 5, support has been removed
+        case GGML_TYPE_Q5_0:
+            return "GGML_TYPE_Q5_0";
+        case GGML_TYPE_Q5_1:
+            return "GGML_TYPE_Q5_1";
+        case GGML_TYPE_Q8_0:
+            return "GGML_TYPE_Q8_0";
+        case GGML_TYPE_Q8_1:
+            return "GGML_TYPE_Q8_1";
+        case GGML_TYPE_Q2_K:
+            return "GGML_TYPE_Q2_K";
+        case GGML_TYPE_Q3_K:
+            return "GGML_TYPE_Q3_K";
+        case GGML_TYPE_Q4_K:
+            return "GGML_TYPE_Q4_K";
+        case GGML_TYPE_Q5_K:
+            return "GGML_TYPE_Q5_K";
+        case GGML_TYPE_Q6_K:
+            return "GGML_TYPE_Q6_K";
+        case GGML_TYPE_Q8_K:
+            return "GGML_TYPE_Q8_K";
+        case GGML_TYPE_IQ2_XXS:
+            return "GGML_TYPE_IQ2_XXS";
+        case GGML_TYPE_IQ2_XS:
+            return "GGML_TYPE_IQ2_XS";
+        case GGML_TYPE_IQ3_XXS:
+            return "GGML_TYPE_IQ3_XXS";
+        case GGML_TYPE_IQ1_S:
+            return "GGML_TYPE_IQ1_S";
+        case GGML_TYPE_IQ4_NL:
+            return "GGML_TYPE_IQ4_NL";
+        case GGML_TYPE_IQ3_S:
+            return "GGML_TYPE_IQ3_S";
+        case GGML_TYPE_IQ2_S:
+            return "GGML_TYPE_IQ2_S";
+        case GGML_TYPE_IQ4_XS:
+            return "GGML_TYPE_IQ4_XS";
+        case GGML_TYPE_I8:
+            return "GGML_TYPE_I8";
+        case GGML_TYPE_I16:
+            return "GGML_TYPE_I16";
+        case GGML_TYPE_I32:
+            return "GGML_TYPE_I32";
+        case GGML_TYPE_I64:
+            return "GGML_TYPE_I64";
+        case GGML_TYPE_F64:
+            return "GGML_TYPE_F64";
+        case GGML_TYPE_IQ1_M:
+            return "GGML_TYPE_IQ1_M";
+        case GGML_TYPE_BF16:
+            return "GGML_TYPE_BF16";
+        case GGML_TYPE_Q4_0_4_4:
+            return "GGML_TYPE_Q4_0_4_4";
+        case GGML_TYPE_Q4_0_4_8:
+            return "GGML_TYPE_Q4_0_4_8";
+        case GGML_TYPE_Q4_0_8_8:
+            return "GGML_TYPE_Q4_0_8_8";
+        case GGML_TYPE_TQ1_0:
+            return "GGML_TYPE_TQ1_0";
+        case GGML_TYPE_TQ2_0:
+            return "GGML_TYPE_TQ2_0";
+        case GGML_TYPE_IQ4_NL_4_4:
+            return "GGML_TYPE_IQ4_NL_4_4";
+        // GGML_TYPE_IQ4_NL_4_8 = 37,
+        // GGML_TYPE_IQ4_NL_8_8 = 38,
+        case GGML_TYPE_COUNT:
+            return "GGML_TYPE_COUNT";
+        }
+        return "Error";
+    }
+
     // precision
     enum ggml_prec {
         GGML_PREC_DEFAULT,

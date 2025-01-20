@@ -9,6 +9,8 @@
 #include "ggml-backend.h"
 #include "ggml-cpp.h"
 
+#include <iostream>
+
 // TODO: replace with ggml API call
 #define QK_K 256
 
@@ -4434,6 +4436,8 @@ struct llama_model_loader {
             throw std::runtime_error(format("%s: failed to load model from %s\n", __func__, fname.c_str()));
         }
 
+        std::cout << format("%s: successfully loaded model from %s\n", __func__, fname.c_str()) << std::endl;
+
         get_key(llm_kv(LLM_KV_GENERAL_ARCHITECTURE), arch_name, false);
         llm_kv = LLM_KV(llm_arch_from_string(arch_name));
 
@@ -4443,6 +4447,7 @@ struct llama_model_loader {
         // Save tensors data offset of the main file.
         // For subsidiary files, `meta` tensor data offset must not be used,
         // so we build a unified tensors index for weights.
+        // int count = 0;
         for (ggml_tensor * cur = ggml_get_first_tensor(ctx); cur; cur = ggml_get_next_tensor(ctx, cur)) {
             std::string tensor_name = std::string(cur->name);
             // make sure there is no duplicated tensor names
@@ -4452,7 +4457,9 @@ struct llama_model_loader {
             n_elements += ggml_nelements(cur);
             n_bytes    += ggml_nbytes(cur);
             weights_map.emplace(tensor_name, llama_tensor_weight(files.back().get(), 0, meta.get(), cur));
+            // count++;
         }
+        // LLAMA_LOG_INFO("*** Num Tensors = %d\n", count);
         uint16_t n_split = 0;
         get_key(llm_kv(LLM_KV_SPLIT_COUNT), n_split, false);
 
@@ -16732,6 +16739,13 @@ static struct ggml_cgraph * llama_build_graph(
                 }
             }
         }
+        // LLAMA_LOG_INFO("** tensor[%s] type[%d] shape[%s] op[%d] src0[%s] src1[%s]\n",
+        //                 cur->name,
+        //                 cur->type,
+        //                 llama_format_tensor_shape(cur).c_str(),
+        //                 cur->op,
+        //                 (cur->src[0]) ? (cur->src[0]->name) : "N/A",
+        //                 (cur->src[1]) ? (cur->src[1]->name) : "N/A");
     };
 
     struct ggml_cgraph * result = NULL;

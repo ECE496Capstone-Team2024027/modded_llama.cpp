@@ -1507,6 +1507,7 @@ static void ggml_vec_dot_f16(int n, float * restrict s, size_t bs, ggml_fp16_t *
     UNUSED(bs);
 
     ggml_float sumf = 0.0;
+    // printf("ggml_vec_dot_f16\n"); // angus todo, call accelerator API
 
 #if defined(GGML_SIMD)
     const int np = (n & ~(GGML_F16_STEP - 1));
@@ -7375,6 +7376,8 @@ static void ggml_compute_forward_mul_mat_one_chunk(
 
     const size_t src1_col_stride = src1_cont || src1->type != vec_dot_type ? row_size : nb11;
 
+    // printf("ggml_compute_forward_mul_mat_one_chunk, vec_dot_type[%d], ggml_tensor[%s]\n", vec_dot_type, dst->name);
+
     // attempt to reduce false-sharing (does not seem to make a difference)
     // 16 * 2, accounting for mmla kernels
     float tmp[32];
@@ -7455,6 +7458,8 @@ static void ggml_compute_forward_mul_mat(
     int64_t                  const blck_size_interleave = ggml_get_type_traits(type)->blck_size_interleave;
     ggml_gemv_t              const gemv                 = type_traits_cpu[type].gemv;
     ggml_gemm_t              const gemm                 = type_traits_cpu[type].gemm;
+
+    printf("ggml_compute_forward_mul_mat, vec_dot_type[%s], ggml_tensor_dst[%s]\n", ggml_type_to_str(vec_dot_type), dst->name);
 
     GGML_ASSERT(ne0 == ne01);
     GGML_ASSERT(ne1 == ne11);
@@ -7596,6 +7601,7 @@ UseGgmlGemm2:;
     const int64_t dr1 = (nr1 + nchunk1 - 1) / nchunk1;
 
     if ((ggml_n_dims(src0) == 2) && gemv) {
+        printf("here gem\n");
         const void * src1_wdata      = (src1->type == vec_dot_type) ? src1->data : params->wdata;
         const size_t src1_col_stride = ggml_is_contiguous(src1) || src1->type != vec_dot_type ? ggml_row_size(vec_dot_type, ne10) : nb11;
         int64_t src0_start = (ith * ne01) / nth;
@@ -12337,6 +12343,7 @@ static void ggml_compute_forward(struct ggml_compute_params * params, struct ggm
             } break;
         case GGML_OP_MUL:
             {
+                // printf("<op GGML_OP_MUL>\n");    // dump op
                 ggml_compute_forward_mul(params, tensor);
             } break;
         case GGML_OP_DIV:
@@ -12417,10 +12424,12 @@ static void ggml_compute_forward(struct ggml_compute_params * params, struct ggm
             } break;
         case GGML_OP_MUL_MAT:
             {
+                // fprintf(stderr, "<op GGML_OP_MUL_MAT>\n");    // dump op
                 ggml_compute_forward_mul_mat(params, tensor);
             } break;
         case GGML_OP_MUL_MAT_ID:
             {
+                // printf("<op GGML_OP_MUL_MAT_ID>\n");    // dump op
                 ggml_compute_forward_mul_mat_id(params, tensor);
             } break;
         case GGML_OP_OUT_PROD:
