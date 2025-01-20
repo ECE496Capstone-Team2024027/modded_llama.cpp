@@ -7459,7 +7459,7 @@ static void ggml_compute_forward_mul_mat(
     ggml_gemv_t              const gemv                 = type_traits_cpu[type].gemv;
     ggml_gemm_t              const gemm                 = type_traits_cpu[type].gemm;
 
-    printf("ggml_compute_forward_mul_mat, vec_dot_type[%s], ggml_tensor_dst[%s]\n", ggml_type_to_str(vec_dot_type), dst->name);
+    printf("ggml_compute_forward_mul_mat, vec_dot_type[%s], ggml_tensor_dst[%s]\n", ggml_type_to_str(type), dst->name);
 
     GGML_ASSERT(ne0 == ne01);
     GGML_ASSERT(ne1 == ne11);
