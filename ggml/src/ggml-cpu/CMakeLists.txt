@@ -317,3 +317,11 @@ target_sources(ggml-cpu PRIVATE cpu-feats-x86.cpp)
 if (EMSCRIPTEN)
     set_target_properties(ggml-cpu PROPERTIES COMPILE_FLAGS "-msimd128")
 endif()
+
+
+if (FPGA_ACCELERATOR)
+    add_subdirectory(${CMAKE_MODULE_PATH}/../../accelerator ${CMAKE_BINARY_DIR}/accelerator)
+
+    target_link_libraries(ggml-cpu PRIVATE accelerator)
+    target_include_directories(ggml-cpu PRIVATE ${ACCELERATOR_PATH}/include)
+endif()
