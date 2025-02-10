@@ -33,7 +33,8 @@ cmake --build --preset ${BUILD_OPT}
 
 MODEL="./dir/to/model.gguf"
 SEED=315
-NUMGEN=1
+# If dumping out dotp info (default off), then use NUMGEN=1
+NUMGEN=10
 MODEL_PROMPT="Once upon a time there was a fox who "
 
 ./build_${BUILD_OPT}/bin/llama-cli -t 1 -m "$MODEL" -s "$SEED" -n "$NUMGEN" -e -p "$MODEL_PROMPT" # running with 1 thread
