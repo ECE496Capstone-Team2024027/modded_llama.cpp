@@ -28,7 +28,7 @@ unicode-data.cpp
 if (FPGA_ACCELERATOR)
     target_link_libraries(llama PRIVATE accelerator)
     target_include_directories(llama PRIVATE ${ACCELERATOR_INCLUDE_DIR})
-    # target_compile_definitions(llama PRIVATE FPGA_API_H)
+    target_compile_definitions(llama PRIVATE USE_FPGA_API)
 endif()
 
 target_include_directories(llama PUBLIC . ../include)
