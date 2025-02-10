@@ -1,35 +1,62 @@
 #!/bin/bash
 
+# DEPENDENCY
+# Ninja: build config in cmake for llama.cpp
+#    Option to avoid this build config using flag "-noninja" for this script
+
 # USAGE
 # Compile without architectural acceleration, no fpga
-#   > bash build_run.sh nofpga
+#   > bash build_run.sh nofpga [-noninja]
 # Compile without architectural acceleration, with fpga
-#   > bash build_run.sh fpga
+#   > bash build_run.sh fpga [-noninja]
 
 # default build config
 BUILD_OPT="nofpga"
 # BUILD_OPT="fpga"
+NO_NINJA=false
 
 # Check if a command-line argument is passed and override BUILD_OPT
-if [ $# -gt 0 ]; then
-    case $1 in
-        "fpga")
-            BUILD_OPT="fpga"
-            ;;
-        "nofpga")
-            BUILD_OPT="nofpga"
-            ;;
-        *)
-            echo "Unknown option: $1. Using default value: $BUILD_OPT"
-            ;;
-    esac
+if [ "$#" -eq 0 ]; then
+    echo "*** No arguments provided. Using default BUILD_OPT: $BUILD_OPT"
 else
-    echo "No command-line argument passed. Using default value: $BUILD_OPT"
+    for arg in "$@"; do
+        case $arg in
+            "fpga"|"nofpga")
+                BUILD_OPT="$arg"
+                ;;
+            "-noninja")
+                NO_NINJA=true
+                ;;
+            *)
+                echo "Unknown option: $arg"
+                exit 1
+                ;;
+        esac
+    done
 fi
 
 rm -rf build_${BUILD_OPT}
-cmake --preset ${BUILD_OPT}
-cmake --build --preset ${BUILD_OPT}
+
+if [ "$NO_NINJA" = true ]; then
+    USE_FPGA="OFF"
+    if [ "$BUILD_OPT" = "fpga" ]; then
+        USE_FPGA="ON"
+    fi
+    
+    mkdir build_${BUILD_OPT}
+    cd build_${BUILD_OPT}
+    cmake .. -DCMAKE_C_FLAGS="-mno-avx2 -mno-avx -mno-fma -mno-sse3 -mno-ssse3" \
+                -DCMAKE_CXX_FLAGS="-mno-avx2 -mno-avx -mno-fma -mno-sse3 -mno-ssse3" \
+                -DGGML_METAL=OFF -DGGML_BLAS=OFF -DGGML_LLAMAFILE=OFF \
+                -DGGML_COMPILER_SUPPORT_MATMUL_INT8=OFF -DGGML_COMPILER_SUPPORT_FP16_VECTOR_ARITHMETIC=OFF \
+                -DGGML_COMPILER_SUPPORT_DOTPROD=OFF -DGGML_NATIVE=OFF -DGGML_ACCELERATE=OFF -DGGML_SIMD=OFF \
+                -DFPGA_ACCELERATOR=$USE_FPGA
+    make
+    cd ..
+else
+    cmake --preset ${BUILD_OPT}
+    cmake --build --preset ${BUILD_OPT}
+fi
 
 MODEL="./dir/to/model.gguf"
 SEED=315
