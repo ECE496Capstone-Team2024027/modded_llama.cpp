@@ -1738,6 +1738,8 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
     const int qk = QK8_0;
     const int nb = n / qk;
 
+    // fprintf(stderr, "n[%d] qk[%d] nb[%d]\n", n, qk, nb);
+
     assert(n % qk == 0);
 #if defined(__ARM_FEATURE_MATMUL_INT8)
     assert((nrc == 2) || (nrc == 1));
@@ -2296,8 +2298,24 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
     sumf = hsum_float_4x4(acc_0, acc_1, acc_2, acc_3);
 #endif
     for (; ib < nb; ++ib) {
+        // char msg[1000];
+        // msg[0] = '\0';
+        // sprintf(msg + strlen(msg), "  here %d\n", ib);
         int sumi0 = 0;
         int sumi1 = 0;
+
+        // sprintf(msg + strlen(msg), "    x[%d]: ", qk);
+        // for (int idx = 0; idx < qk/2; idx++) {
+        //     sprintf(msg + strlen(msg), "%01x ", (x[ib].qs[idx] & 0x0F));
+        //     sprintf(msg + strlen(msg), "%01x ", (x[ib].qs[idx] >>   4));
+        // }
+        // strcat(msg, "\n");
+        // sprintf(msg + strlen(msg), "    y[%d]: ", qk);
+        // for (int idx = 0; idx < qk/2; idx++) {
+        //     sprintf(msg + strlen(msg), "%02x ", 0x00FF & y[ib].qs[idx]);
+        //     sprintf(msg + strlen(msg), "%02x ", 0x00FF & y[ib].qs[idx + qk/2]); 
+        // }
+        // strcat(msg, "\n    ");
 
         for (int j = 0; j < qk/2; ++j) {
             const int v0 = (x[ib].qs[j] & 0x0F) - 8;
@@ -2305,13 +2323,17 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
 
             sumi0 += (v0 * y[ib].qs[j]);
             sumi1 += (v1 * y[ib].qs[j + qk/2]);
+            // sprintf(msg + strlen(msg), "si0[%d] si1[%d]", sumi0, sumi1);
         }
 
         int sumi = sumi0 + sumi1;
+        // sprintf(msg + strlen(msg), "\n    sum = %d\n", sumi);
+        // fprintf(stdout, "%s", msg);
         sumf += sumi*GGML_FP16_TO_FP32(x[ib].d)*GGML_FP16_TO_FP32(y[ib].d);
     }
 
     *s = sumf;
+    // fprintf(stderr, "done\n");
 }
 
 void ggml_vec_dot_q4_1_q8_1(int n, float * restrict s, size_t bs, const void * restrict vx, size_t bx, const void * restrict vy, size_t by, int nrc) {
@@ -3353,6 +3375,8 @@ void ggml_vec_dot_q8_0_q8_0(int n, float * restrict s, size_t bs, const void * r
 
     const block_q8_0 * restrict x = vx;
     const block_q8_0 * restrict y = vy;
+
+    // printf("ggml_vec_dot_q8_0_q8_0\n");
 
 #if defined(__ARM_FEATURE_MATMUL_INT8)
     if (nrc == 2) {
