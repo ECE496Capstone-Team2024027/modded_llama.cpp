@@ -83,10 +83,10 @@
     { "name": "x64-windows-vulkan-release", "inherits": [ "base", "vulkan", "release" ] },
 
     {
-        "name": "noaccel",
-        "description": "Build without acceleration features, to simulate program path taken by FPGA SoC",
+        "name": "noarchaccel",
+        "description": "Build without architectural acceleration features, to simulate program path taken by FPGA SoC",
         "inherits": [ "base" ],
-        "hidden": false,
+        "hidden": true,
         "generator": "Ninja",
         "binaryDir": "${sourceDir}/build_${presetName}",
         "cacheVariables": {
@@ -102,12 +102,18 @@
             "GGML_ACCELERATE": "OFF",
             "GGML_SIMD": "OFF"
         }
-    }
+    },
+    { "name": "nofpga", "inherits": [ "noarchaccel" ], "binaryDir": "${sourceDir}/build_${presetName}" },
+    { "name": "fpga", "inherits": [ "noarchaccel" ], "binaryDir": "${sourceDir}/build_${presetName}", "cacheVariables": {"FPGA_ACCELERATOR": "ON"} }
   ],
   "buildPresets": [
     {
-        "name": "noaccel",
-        "configurePreset": "noaccel"
+        "name": "nofpga",
+        "configurePreset": "nofpga"
+    },
+    {
+        "name": "fpga",
+        "configurePreset": "fpga"
     }
   ]
 }

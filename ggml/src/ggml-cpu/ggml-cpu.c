@@ -7420,7 +7420,7 @@ static void ggml_compute_forward_mul_mat_one_chunk(
                     vec_dot(ne00, &tmp[ir0 - iir0], (num_rows_per_vec_dot > 1 ? 16 : 0), src0_row + ir0 * nb01, (num_rows_per_vec_dot > 1 ? nb01 : 0), src1_col, (num_rows_per_vec_dot > 1 ? src1_col_stride : 0), num_rows_per_vec_dot);
                     // TODO: insert capstone API if vec length and data format match
                     #ifdef USE_FPGA_API
-                    fpga_dummy_call();
+                    // fpga_dummy_call();  // disabled by default to prevent cli spam
                     #endif
                     
                 }

@@ -123,10 +123,14 @@ llama_option_depr(WARNING     LLAMA_CANN                GGML_CANN)
 # build the library
 #
 
-set(FPGA_ACCELERATOR YES)
+option(FPGA_ACCELERATOR "Enable FPGA acceleration" OFF)
+# set(FPGA_ACCELERATOR YES)
 if (FPGA_ACCELERATOR)
+    message(STATUS "FPGA acceleration enabled")
     set(ACCELERATOR_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../accelerator)
     add_subdirectory(${ACCELERATOR_PATH} ${CMAKE_BINARY_DIR}/accelerator)
+else()
+    message(STATUS "FPGA acceleration disabled")
 endif()
 
 if (NOT TARGET ggml)
