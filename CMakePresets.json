@@ -80,6 +80,34 @@
     { "name": "x64-windows-sycl-release-f16", "inherits": [ "sycl-base", "release", "sycl_f16" ] },
 
     { "name": "x64-windows-vulkan-debug", "inherits": [ "base", "vulkan", "debug" ] },
-    { "name": "x64-windows-vulkan-release", "inherits": [ "base", "vulkan", "release" ] }
+    { "name": "x64-windows-vulkan-release", "inherits": [ "base", "vulkan", "release" ] },
+
+    {
+        "name": "noaccel",
+        "description": "Build without acceleration features, to simulate program path taken by FPGA SoC",
+        "inherits": [ "base" ],
+        "hidden": false,
+        "generator": "Ninja",
+        "binaryDir": "${sourceDir}/build_${presetName}",
+        "cacheVariables": {
+            "CMAKE_C_FLAGS": "-mno-avx2 -mno-avx -mno-fma -mno-sse3 -mno-ssse3",
+            "CMAKE_CXX_FLAGS": "-mno-avx2 -mno-avx -mno-fma -mno-sse3 -mno-ssse3",
+            "GGML_METAL": "OFF",
+            "GGML_BLAS": "OFF",
+            "GGML_LLAMAFILE": "OFF",
+            "GGML_COMPILER_SUPPORT_MATMUL_INT8": "OFF",
+            "GGML_COMPILER_SUPPORT_FP16_VECTOR_ARITHMETIC": "OFF",
+            "GGML_COMPILER_SUPPORT_DOTPROD": "OFF",
+            "GGML_NATIVE": "OFF",
+            "GGML_ACCELERATE": "OFF",
+            "GGML_SIMD": "OFF"
+        }
+    }
+  ],
+  "buildPresets": [
+    {
+        "name": "noaccel",
+        "configurePreset": "noaccel"
+    }
   ]
 }
