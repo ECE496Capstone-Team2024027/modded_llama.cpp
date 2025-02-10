@@ -57,7 +57,16 @@ def dump_metadata(reader: GGUFReader, args: argparse.Namespace) -> None:
     print(f'* Dumping {len(reader.tensors)} tensor(s)')  # noqa: NP100
     for n, tensor in enumerate(reader.tensors, 1):
         prettydims = ', '.join('{0:5}'.format(d) for d in list(tensor.shape) + [1] * (4 - len(tensor.shape)))
-        print(f'  {n:5}: {tensor.n_elements:10} | {prettydims} | {tensor.tensor_type.name:7} | {tensor.name}')  # noqa: NP100
+        # Angus Code =======================
+        num_weights = tensor.data.size
+        num_zeroes = np.count_nonzero(tensor.data==0)
+        pct_zeroes = num_zeroes / num_weights * 100
+        # np.set_printoptions(threshold=sys.maxsize)
+        # print(tensor.data)
+        print(f'  {n:5}: {tensor.n_elements:10} | {prettydims} | {tensor.tensor_type.name:7} | {tensor.name} | {pct_zeroes:5.2f}% zeroes (of {num_weights})')  # noqa: NP100
+        # ==================================
+        
+        # print(f'  {n:5}: {tensor.n_elements:10} | {prettydims} | {tensor.tensor_type.name:7} | {tensor.name}')  # noqa: NP100
 
 
 def dump_metadata_json(reader: GGUFReader, args: argparse.Namespace) -> None:
