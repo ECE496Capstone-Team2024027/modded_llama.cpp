@@ -11,6 +11,15 @@
 
 #include <iostream>
 
+// #ifdef FPGA_API_H
+#include "fpga_api.h"
+extern "C" {
+    bool fpga_init();
+    void fpga_cleanup();
+    bool fpga_dummy_call();
+}
+// #endif
+
 // TODO: replace with ggml API call
 #define QK_K 256
 
@@ -20063,6 +20072,11 @@ struct llama_context * llama_new_context_with_model(
         }
     }
 
+    // ANGUS
+    #ifdef FPGA_API_H
+    fpga_init();
+    #endif
+
     return ctx;
 }
 
@@ -22488,6 +22502,11 @@ void llama_perf_context_print(const struct llama_context * ctx) {
     LLAMA_LOG_INFO("%s:        eval time = %10.2f ms / %5d runs   (%8.2f ms per token, %8.2f tokens per second)\n",
             __func__, data.t_eval_ms, data.n_eval, data.t_eval_ms / data.n_eval, 1e3 / data.t_eval_ms * data.n_eval);
     LLAMA_LOG_INFO("%s:       total time = %10.2f ms / %5d tokens\n", __func__, (t_end_ms - data.t_start_ms), (data.n_p_eval + data.n_eval));
+
+    // Angus
+    // #ifdef FPGA_API_H
+    fpga_cleanup();
+    // #endif
 }
 
 void llama_perf_context_reset(struct llama_context * ctx) {

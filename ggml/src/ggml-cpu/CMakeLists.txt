@@ -320,8 +320,7 @@ endif()
 
 
 if (FPGA_ACCELERATOR)
-    add_subdirectory(${CMAKE_MODULE_PATH}/../../accelerator ${CMAKE_BINARY_DIR}/accelerator)
-
     target_link_libraries(ggml-cpu PRIVATE accelerator)
-    target_include_directories(ggml-cpu PRIVATE ${ACCELERATOR_PATH}/include)
+    target_include_directories(ggml-cpu PRIVATE ${ACCELERATOR_INCLUDE_DIR})
+    # target_compile_definitions(ggml-cpu PRIVATE FPGA_API_H)
 endif()

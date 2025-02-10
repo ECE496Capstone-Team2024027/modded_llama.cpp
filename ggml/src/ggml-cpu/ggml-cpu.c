@@ -1,7 +1,9 @@
 #define _CRT_SECURE_NO_DEPRECATE // Disables "unsafe" warnings on Windows
 #define _USE_MATH_DEFINES // For M_PI on MSVC
 
+// #ifdef FPGA_API_H
 #include "fpga_api.h"
+// #endif
 
 #include "ggml-backend-impl.h"
 #include "ggml-backend.h"
@@ -1509,7 +1511,6 @@ static void ggml_vec_dot_f16(int n, float * restrict s, size_t bs, ggml_fp16_t *
     UNUSED(bs);
 
     ggml_float sumf = 0.0;
-    // printf("ggml_vec_dot_f16\n"); // angus todo, call accelerator API
 
 #if defined(GGML_SIMD)
     const int np = (n & ~(GGML_F16_STEP - 1));
@@ -7418,7 +7419,10 @@ static void ggml_compute_forward_mul_mat_one_chunk(
                 for (int64_t ir0 = iir0; ir0 < iir0 + blck_0 && ir0 < ir0_end; ir0 += num_rows_per_vec_dot) {
                     vec_dot(ne00, &tmp[ir0 - iir0], (num_rows_per_vec_dot > 1 ? 16 : 0), src0_row + ir0 * nb01, (num_rows_per_vec_dot > 1 ? nb01 : 0), src1_col, (num_rows_per_vec_dot > 1 ? src1_col_stride : 0), num_rows_per_vec_dot);
                     // TODO: insert capstone API if vec length and data format match
-                    fpga_dummy_call();
+                    // #ifdef FPGA_API_H
+                    // fpga_dummy_call();
+                    // #endif
+                    
                 }
 
                 for (int cn = 0; cn < num_rows_per_vec_dot; ++cn) {
@@ -7463,7 +7467,8 @@ static void ggml_compute_forward_mul_mat(
     ggml_gemv_t              const gemv                 = type_traits_cpu[type].gemv;
     ggml_gemm_t              const gemm                 = type_traits_cpu[type].gemm;
 
-    printf("ggml_compute_forward_mul_mat, vec_dot_type[%s], ggml_tensor_dst[%s]\n", ggml_type_to_str(type), dst->name);
+    // Angus
+    // printf("ggml_compute_forward_mul_mat, vec_dot_type[%s], ggml_tensor_dst[%s]\n", ggml_type_to_str(type), dst->name);
 
     GGML_ASSERT(ne0 == ne01);
     GGML_ASSERT(ne1 == ne11);
@@ -7605,7 +7610,6 @@ UseGgmlGemm2:;
     const int64_t dr1 = (nr1 + nchunk1 - 1) / nchunk1;
 
     if ((ggml_n_dims(src0) == 2) && gemv) {
-        printf("here gem\n");
         const void * src1_wdata      = (src1->type == vec_dot_type) ? src1->data : params->wdata;
         const size_t src1_col_stride = ggml_is_contiguous(src1) || src1->type != vec_dot_type ? ggml_row_size(vec_dot_type, ne10) : nb11;
         int64_t src0_start = (ith * ne01) / nth;

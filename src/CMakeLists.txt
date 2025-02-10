@@ -11,18 +11,25 @@ llama_add_compile_flags()
 # libraries
 #
 
+
 # llama
 
 add_library(llama
-            ../include/llama.h
-            llama.cpp
-            llama-vocab.cpp
-            llama-grammar.cpp
-            llama-sampling.cpp
-            unicode.h
-            unicode.cpp
-            unicode-data.cpp
-            )
+../include/llama.h
+llama.cpp
+llama-vocab.cpp
+llama-grammar.cpp
+llama-sampling.cpp
+unicode.h
+unicode.cpp
+unicode-data.cpp
+)
+
+if (FPGA_ACCELERATOR)
+    target_link_libraries(llama PRIVATE accelerator)
+    target_include_directories(llama PRIVATE ${ACCELERATOR_INCLUDE_DIR})
+    # target_compile_definitions(llama PRIVATE FPGA_API_H)
+endif()
 
 target_include_directories(llama PUBLIC . ../include)
 target_compile_features   (llama PUBLIC cxx_std_17) # don't bump
