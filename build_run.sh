@@ -6,9 +6,14 @@
 
 # USAGE
 # Compile without architectural acceleration, no fpga
-#   > bash build_run.sh nofpga [-noninja]
+#   > bash build_run.sh nofpga [-noninja | -skipbuild | -skiprun]
 # Compile without architectural acceleration, with fpga
-#   > bash build_run.sh fpga [-noninja]
+#   > bash build_run.sh fpga [-noninja | -skipbuild | -skiprun]
+
+# OPTIONS
+# To skip build, use -skipbuild, but user must still specify [fpga | nofpga] to execute run command properly
+# To skip run, use -skiprun
+
 
 # default build config
 BUILD_OPT="nofpga"
