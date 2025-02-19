@@ -6,13 +6,25 @@
 
 # USAGE
 # Compile without architectural acceleration, no fpga
-#   > bash build_run.sh nofpga [-noninja | -skipbuild | -skiprun]
+#   > bash build_run.sh nofpga [options]
 # Compile without architectural acceleration, with fpga
-#   > bash build_run.sh fpga [-noninja | -skipbuild | -skiprun]
+#   > bash build_run.sh fpga [options]
 
-# OPTIONS
-# To skip build, use -skipbuild, but user must still specify [fpga | nofpga] to execute run command properly
-# To skip run, use -skiprun
+# OPTION SHORTHANDS
+#   -discokit
+#       Use options -noninja, and -useswap
+#
+# EXECUTION OPTIONS
+#   -skipbuild
+#       Skip build, but user must still specify [fpga | nofpga] to execute run command properly
+#   -skiprun
+#       Skip run command (inference) execution
+#
+# BUILD OPTIONS
+#   -noninja
+#       Bypass build config in cmake for llama.cpp, which uses NINJA
+#   -useswap
+#       Sets up swap memory to use for compilation, use for memory constrained devices like the MPFS Disco Kit
 
 
 # default build config
@@ -21,6 +33,8 @@ BUILD_OPT="nofpga"
 NO_NINJA=false
 DO_BUILD=true
 DO_RUN=true
+USE_SWAP=false  # this option is required for the DISCO KIT
+COMPILE_DISCOKIT=false
 
 # Check if a command-line argument is passed and override BUILD_OPT
 if [ "$#" -eq 0 ]; then
@@ -31,6 +45,9 @@ else
             "fpga"|"nofpga")
                 BUILD_OPT="$arg"
                 ;;
+            "-useswap")
+                USE_SWAP=true
+                ;;
             "-skipbuild")
                 DO_BUILD=false
                 ;;
@@ -40,12 +57,24 @@ else
             "-noninja")
                 NO_NINJA=true
                 ;;
+            "-discokit")
+                NO_NINJA=true
+                USE_SWAP=true
+                COMPILE_DISCOKIT=true
+                ;;
             *)
                 echo "Unknown option: $arg"
                 exit 1
                 ;;
         esac
     done
+fi
+
+if [ "$USE_SWAP" = true ]; then
+    dd if=/dev/zero of=/swapfile bs=1M count=1024
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
 fi
 
 if [ "$DO_BUILD" = true ]; then
@@ -56,15 +85,20 @@ if [ "$DO_BUILD" = true ]; then
         if [ "$BUILD_OPT" = "fpga" ]; then
             USE_FPGA="ON"
         fi
-        
+
+        COMPILE_CMAKE_FLAGS=
+        if [ "$COMPILE_DISCOKIT" = false ]; then
+            COMPILE_CMAKE_FLAGS=true
+        fi
+
         mkdir build_${BUILD_OPT}
         cd build_${BUILD_OPT}
-        cmake .. -DCMAKE_C_FLAGS="-mno-avx2 -mno-avx -mno-fma -mno-sse3 -mno-ssse3" \
-                    -DCMAKE_CXX_FLAGS="-mno-avx2 -mno-avx -mno-fma -mno-sse3 -mno-ssse3" \
-                    -DGGML_METAL=OFF -DGGML_BLAS=OFF -DGGML_LLAMAFILE=OFF \
-                    -DGGML_COMPILER_SUPPORT_MATMUL_INT8=OFF -DGGML_COMPILER_SUPPORT_FP16_VECTOR_ARITHMETIC=OFF \
-                    -DGGML_COMPILER_SUPPORT_DOTPROD=OFF -DGGML_NATIVE=OFF -DGGML_ACCELERATE=OFF -DGGML_SIMD=OFF \
-                    -DFPGA_ACCELERATOR=$USE_FPGA
+        cmake .. ${COMPILE_WITH_FLAGS:+-DCMAKE_C_FLAGS="-mno-avx2 -mno-avx -mno-fma -mno-sse3 -mno-ssse3"} \
+                 ${COMPILE_WITH_FLAGS:+-DCMAKE_CXX_FLAGS="-mno-avx2 -mno-avx -mno-fma -mno-sse3 -mno-ssse3"} \
+                 -DGGML_METAL=OFF -DGGML_BLAS=OFF -DGGML_LLAMAFILE=OFF \
+                 -DGGML_COMPILER_SUPPORT_MATMUL_INT8=OFF -DGGML_COMPILER_SUPPORT_FP16_VECTOR_ARITHMETIC=OFF \
+                 -DGGML_COMPILER_SUPPORT_DOTPROD=OFF -DGGML_NATIVE=OFF -DGGML_ACCELERATE=OFF -DGGML_SIMD=OFF \
+                 -DFPGA_ACCELERATOR=$USE_FPGA
         make
         cd ..
     else
