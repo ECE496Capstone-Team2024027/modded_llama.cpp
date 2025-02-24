@@ -3,6 +3,7 @@
 
 #ifdef USE_FPGA_API
 #include "fpga_api.h"
+extern FPGA fpga;
 #endif
 
 #include "ggml-backend-impl.h"
@@ -7420,6 +7421,10 @@ static void ggml_compute_forward_mul_mat_one_chunk(
                     vec_dot(ne00, &tmp[ir0 - iir0], (num_rows_per_vec_dot > 1 ? 16 : 0), src0_row + ir0 * nb01, (num_rows_per_vec_dot > 1 ? nb01 : 0), src1_col, (num_rows_per_vec_dot > 1 ? src1_col_stride : 0), num_rows_per_vec_dot);
                     // TODO: insert capstone API if vec length and data format match
                     #ifdef USE_FPGA_API
+                    void * x_addr = src0_row + ir0 * nb01 + 2;
+                    void * y_addr = src1_col;
+                    int dotp_sum = FPGA_vec_dot_32elem_q4_0_q8_0(&fpga, x_addr, y_addr);
+                    printf("fpga sum[0] = %d", dotp_sum);
                     // fpga_dummy_call();  // disabled by default to prevent cli spam
                     #endif
                     

@@ -14,10 +14,14 @@
 #ifdef USE_FPGA_API
 #include "fpga_api.h"
 extern "C" {
-    bool fpga_init();
-    void fpga_cleanup();
-    bool fpga_dummy_call();
+    bool FPGA_init(FPGA *);
+    void FPGA_cleanup(FPGA *);
+    bool FPGA_dummy_call(FPGA *, int id);
+    static uint32_t get_memory_size(FPGA *self, char *sysfs_path, char *uio_device);
+    static int get_uio_device(FPGA *self, char * id);
+    int32_t FPGA_vec_dot_32elem_q4_0_q8_0(FPGA *self, const void * RESTRICT x, const void * RESTRICT y);
 }
+FPGA fpga;
 #endif
 
 // TODO: replace with ggml API call
@@ -20072,9 +20076,8 @@ struct llama_context * llama_new_context_with_model(
         }
     }
 
-    // ANGUS
     #ifdef USE_FPGA_API
-    fpga_init();
+    FPGA_init(&fpga);
     #endif
 
     return ctx;
@@ -22503,9 +22506,8 @@ void llama_perf_context_print(const struct llama_context * ctx) {
             __func__, data.t_eval_ms, data.n_eval, data.t_eval_ms / data.n_eval, 1e3 / data.t_eval_ms * data.n_eval);
     LLAMA_LOG_INFO("%s:       total time = %10.2f ms / %5d tokens\n", __func__, (t_end_ms - data.t_start_ms), (data.n_p_eval + data.n_eval));
 
-    // Angus
     #ifdef USE_FPGA_API
-    fpga_cleanup();
+    FPGA_cleanup(&fpga);
     #endif
 }
 
