@@ -21,7 +21,6 @@ extern "C" {
     static int get_uio_device(FPGA *self, char * id);
     int32_t FPGA_vec_dot_32elem_q4_0_q8_0(FPGA *self, const void * RESTRICT x, const void * RESTRICT y);
 }
-FPGA fpga;
 #endif
 
 // TODO: replace with ggml API call
