@@ -2313,7 +2313,7 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
         for (int idx = 0; idx < qk; idx++) {
             sprintf(msg + strlen(msg), "[%d] %02x ", idx, 0x00FF & y[ib].qs[idx]);
         }
-        strcat(msg, "\n    ");
+        // strcat(msg, "\n    ");
 
         for (int j = 0; j < qk/2; ++j) {
             const int v0 = (x[ib].qs[j] & 0x0F) - 8;
@@ -2325,7 +2325,7 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
         }
 
         int sumi = sumi0 + sumi1;
-        sprintf(msg + strlen(msg), "\n    sum = %d\n", sumi);
+        sprintf(msg + strlen(msg), "\n    sum = %d\n\n", sumi);
         fprintf(stdout, "%s", msg);
         sumf += sumi*GGML_FP16_TO_FP32(x[ib].d)*GGML_FP16_TO_FP32(y[ib].d);
     }
