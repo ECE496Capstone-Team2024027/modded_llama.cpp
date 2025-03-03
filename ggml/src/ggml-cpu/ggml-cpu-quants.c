@@ -1,6 +1,10 @@
 #define GGML_COMMON_IMPL_C
 #include "ggml-common.h"
 
+#ifdef USE_FPGA_API
+#include "fpga_api.h"
+#endif
+
 #include "ggml-quants.h"
 #include "ggml-cpu-quants.h"
 #include "ggml-impl.h"
@@ -2298,6 +2302,12 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
 //     sumf = hsum_float_4x4(acc_0, acc_1, acc_2, acc_3);
 // #endif
     for (; ib < nb; ++ib) {
+
+        // #ifdef USE_FPGA_API
+        void *x_addr = (void *) &(x[ib]) + 0x2;
+        void *y_addr = (void *) &(y[ib]) + 0x2;
+        int sumi_fpga = FPGA_vec_dot_32elem_q4_0_q8_0(&fpga, x_addr, y_addr);
+        // #else
         char msg[2000];
         msg[0] = '\0';
 
@@ -2313,7 +2323,6 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
         for (int idx = 0; idx < qk; idx++) {
             sprintf(msg + strlen(msg), "[%d] %02x ", idx, 0x00FF & y[ib].qs[idx]);
         }
-        // strcat(msg, "\n    ");
 
         for (int j = 0; j < qk/2; ++j) {
             const int v0 = (x[ib].qs[j] & 0x0F) - 8;
@@ -2326,12 +2335,16 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
 
         int sumi = sumi0 + sumi1;
         sprintf(msg + strlen(msg), "\n    sum = %d\n\n", sumi);
+        sprintf(msg + strlen(msg), "\n    fpga_sum = %d\n\n", sumi_fpga);
+        sprintf(msg + strlen(msg), "\n    x,d = %d       y.d = %d\n\n", x[ib].d, y[ib].d);
         fprintf(stdout, "%s", msg);
+        // #endif // USE_FPGA_API
+
         sumf += sumi*GGML_FP16_TO_FP32(x[ib].d)*GGML_FP16_TO_FP32(y[ib].d);
     }
 
     *s = sumf;
-    fprintf(stderr, "done\n");
+    // fprintf(stderr, "done\n");
 }
 
 void ggml_vec_dot_q4_1_q8_1(int n, float * restrict s, size_t bs, const void * restrict vx, size_t bx, const void * restrict vy, size_t by, int nrc) {
