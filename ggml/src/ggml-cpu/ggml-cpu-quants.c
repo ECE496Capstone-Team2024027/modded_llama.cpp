@@ -1742,7 +1742,7 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
     const int qk = QK8_0;
     const int nb = n / qk;
 
-    fprintf(stderr, "\nn[%d] qk[%d] nb[%d]\nvx[%p]\nvy[%p]\n", n, qk, nb, vx, vy);
+    // fprintf(stderr, "\nn[%d] qk[%d] nb[%d]\nvx[%p]\nvy[%p]\n", n, qk, nb, vx, vy);
 
     assert(n % qk == 0);
 #if defined(__ARM_FEATURE_MATMUL_INT8)
@@ -2303,26 +2303,27 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
 // #endif
     for (; ib < nb; ++ib) {
 
-        // #ifdef USE_FPGA_API
+        int sumi;
+      #ifdef USE_FPGA_API
         void *x_addr = (void *) &(x[ib]) + 0x2;
         void *y_addr = (void *) &(y[ib]) + 0x2;
-        int sumi_fpga = FPGA_vec_dot_32elem_q4_0_q8_0(&fpga, x_addr, y_addr);
-        // #else
-        char msg[2000];
-        msg[0] = '\0';
+        sumi = FPGA_vec_dot_32elem_q4_0_q8_0(&fpga, x_addr, y_addr);
+      #else
+        // char msg[2000];
+        // msg[0] = '\0';
 
         int sumi0 = 0;
         int sumi1 = 0;
 
-        sprintf(msg + strlen(msg), "    x[ib=%d] @ %p: ", ib, (void *)&(x[ib].qs));
-        for (int idx = 0; idx < qk/2; idx++) {
-            sprintf(msg + strlen(msg), "[%d] %02x ", idx, x[ib].qs[idx]);
-        }
-        strcat(msg, "\n");
-        sprintf(msg + strlen(msg), "    y[ib=%d] @ %p ", ib, (void *)&(y[ib].qs));
-        for (int idx = 0; idx < qk; idx++) {
-            sprintf(msg + strlen(msg), "[%d] %02x ", idx, 0x00FF & y[ib].qs[idx]);
-        }
+        // sprintf(msg + strlen(msg), "    x[ib=%d] @ %p: ", ib, (void *)&(x[ib].qs));
+        // for (int idx = 0; idx < qk/2; idx++) {
+        //     sprintf(msg + strlen(msg), "[%d] %02x ", idx, x[ib].qs[idx]);
+        // }
+        // strcat(msg, "\n");
+        // sprintf(msg + strlen(msg), "    y[ib=%d] @ %p ", ib, (void *)&(y[ib].qs));
+        // for (int idx = 0; idx < qk; idx++) {
+        //     sprintf(msg + strlen(msg), "[%d] %02x ", idx, 0x00FF & y[ib].qs[idx]);
+        // }
 
         for (int j = 0; j < qk/2; ++j) {
             const int v0 = (x[ib].qs[j] & 0x0F) - 8;
@@ -2333,12 +2334,12 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
             // sprintf(msg + strlen(msg), "si0[%d] si1[%d]", sumi0, sumi1);
         }
 
-        int sumi = sumi0 + sumi1;
-        sprintf(msg + strlen(msg), "\n    sum = %d\n\n", sumi);
-        sprintf(msg + strlen(msg), "\n    fpga_sum = %d\n\n", sumi_fpga);
-        sprintf(msg + strlen(msg), "\n    x,d = %d       y.d = %d\n\n", x[ib].d, y[ib].d);
-        fprintf(stdout, "%s", msg);
-        // #endif // USE_FPGA_API
+        sumi = sumi0 + sumi1;
+        // sprintf(msg + strlen(msg), "\n    sum = %d\n\n", sumi);
+        // sprintf(msg + strlen(msg), "\n    fpga_sum = %d\n\n", sumi_fpga);
+        // sprintf(msg + strlen(msg), "\n    x,d = %d       y.d = %d\n\n", x[ib].d, y[ib].d);
+        // fprintf(stdout, "%s", msg);
+      #endif // USE_FPGA_API
 
         sumf += sumi*GGML_FP16_TO_FP32(x[ib].d)*GGML_FP16_TO_FP32(y[ib].d);
     }
