@@ -2301,13 +2301,19 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
 
 //     sumf = hsum_float_4x4(acc_0, acc_1, acc_2, acc_3);
 // #endif
+
+    // test getting all addresses
+    for (int ndotp = 0; ndotp < nb; ndotp++) {
+
+    }
+
     for (; ib < nb; ++ib) {
 
         int sumi;
       #ifdef USE_FPGA_API
         void *x_addr = (void *) &(x[ib]) + 0x2;
         void *y_addr = (void *) &(y[ib]) + 0x2;
-        sumi = FPGA_vec_dot_32elem_q4_0_q8_0(&fpga, x_addr, y_addr);
+        sumi = FPGA_vec_dot_32elem_q4_0_q8_0_x1(&fpga, x_addr, y_addr);
       #else
         // char msg[2000];
         // msg[0] = '\0';
@@ -2337,7 +2343,7 @@ void ggml_vec_dot_q4_0_q8_0(int n, float * restrict s, size_t bs, const void * r
         sumi = sumi0 + sumi1;
         // sprintf(msg + strlen(msg), "\n    sum = %d\n\n", sumi);
         // sprintf(msg + strlen(msg), "\n    fpga_sum = %d\n\n", sumi_fpga);
-        // sprintf(msg + strlen(msg), "\n    x,d = %d       y.d = %d\n\n", x[ib].d, y[ib].d);
+        // sprintf(msg + strlen(msg), "\n    x.d = %04x       y.d = %04x,   post-float%f\n\n", x[ib].d, y[ib].d, sumi*GGML_FP16_TO_FP32(x[ib].d)*GGML_FP16_TO_FP32(y[ib].d));
         // fprintf(stdout, "%s", msg);
       #endif // USE_FPGA_API
 

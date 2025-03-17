@@ -19,7 +19,7 @@ extern "C" {
     bool FPGA_dummy_call(FPGA *, int id);
     static uint32_t get_memory_size(FPGA *self, char *sysfs_path, char *uio_device);
     static int get_uio_device(FPGA *self, char * id);
-    int32_t FPGA_vec_dot_32elem_q4_0_q8_0(FPGA *self, const void * RESTRICT x, const void * RESTRICT y);
+    int32_t FPGA_vec_dot_32elem_q4_0_q8_0_x1(FPGA *self, const void * RESTRICT x, const void * RESTRICT y);
 }
 #endif
 
