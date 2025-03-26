@@ -48,6 +48,15 @@ else
                     exit 1
                 fi
                 ;;
+            "-seed")
+                if [[ -n "$2" && "$2" =~ ^[0-9]+$ ]]; then
+                    SEED="$2"
+                    shift 2
+                else
+                    echo "Error: -seed requires a numeric argument"
+                    exit 1
+                fi
+                ;;
             *)
                 echo "Unknown option: $1"
                 exit 1
